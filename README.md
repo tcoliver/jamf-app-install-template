@@ -1,18 +1,21 @@
 
 # Jamf Pro - Application Download Install Template
 
+## Table of Contents
+
+- [1. General Info](#1.-General-Info)
+- [2. Features](#2.-Features)  
+- [3. Documentation](#3.-Documentation)  
+- [4. Usage](#4.-Usage)
+- [5. Contributing](#5.-Contributing)
+- [6. License](#6.-License)
+
+## 1. General Info
+
 A bash shell template designed to make it as simple as possible to create application
 install scripts that are always up to date.
 
-## Table of Contents
-
-- [1. Features](#1.-Features)  
-- [2. Documentation](#2.-Documentation)  
-- [3. Usage](#3.-Usage)
-- [4. Contributing](#4.-Contributing)
-- [5. License](#5. License)
-
-## 1. Features
+## 2. Features
 
 - Download and install of PKG and DMG type application distributions
 - Configurable for most applications with out modifying the script by setting variables
@@ -21,12 +24,12 @@ install scripts that are always up to date.
 - Configurable to exit as failure or success on a canceled run
 - Auto relaunch the application if it was closed during install
 
-## 2. Documentation
+## 3. Documentation
 
 The template can be configured for most any application install by modifying only the "User
 Modifiable" section. This section includes the following global variables and functions:
 
-### 2.1 Variables
+### 3.1 Variables
 
 | Variable           | Type     | Description
 | :----------------- | :------- | :----------------------------------------------------- |
@@ -39,7 +42,7 @@ Modifiable" section. This section includes the following global variables and fu
 | `RELAUNCH_ARGS`    | `array`  | Arguments to pass when relaunching the application     |
 | `FAIL_ON_SKIP`     | `bool`   | If "true" then return non-zero exit code on skip       |
 
-### 2.2 Functions
+### 3.2 Functions
 
 | Function           | Description                                                       |
 | :----------------- | :---------------------------------------------------------------- |
@@ -48,7 +51,7 @@ Modifiable" section. This section includes the following global variables and fu
 
 **Important Note:** Return 0 from the `dont_run` function to cancel the install. Returning anything other than 0 (e.g., return 1) will allow the script to continue. The script continues by default.
 
-### 2.3 An example Zoom configuration
+### 3.3 An example Zoom configuration
 
 ```bash
 ##########################
@@ -90,23 +93,23 @@ function dont_run() {
 ##########################
 ```
 
-## 3. Usage
+## 4. Usage
 
-### 3.1 Run Locally
+### 4.1 Run Locally
 
 ```bash
 sudo chmod 755 ./download_install_zoom.sh
 sudo ./download_install_zoom.sh
 ```
 
-### 3.2 Jamf Pro Deployment
+### 4.2 Jamf Pro Deployment
 
 Scripts based on this template can be deployed easily as a Jamf Pro Policy using the standard Script and Policy workflows outlined in the [Jamf Pro Administrators Guide](https://www.jamf.com/resources/product-documentation/jamf-pro-administrators-guide/).
   
-## 4. Contributing
+## 5. Contributing
 
 Contributions are always welcome! Feel free to create issues or pull requests with template improvements or additional examples.
 
-## 5. License
+## 6. License
 
 [MIT](https://choosealicense.com/licenses/mit/)
