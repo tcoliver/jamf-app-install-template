@@ -9,7 +9,8 @@ install scripts that are always up to date.
 - [1. Features](#1.-Features)  
 - [2. Documentation](#2.-Documentation)  
 - [3. Usage](#3.-Usage)
-- [4. Contributing](#5.-Contributing)
+- [4. Contributing](#4.-Contributing)
+- [5. License](#5. License)
 
 ## 1. Features
 
@@ -105,3 +106,7 @@ Scripts based on this template can be deployed easily as a Jamf Pro Policy using
 ## 4. Contributing
 
 Contributions are always welcome! Feel free to create issues or pull requests with template improvements or additional examples.
+
+## 5. License
+
+[MIT](https://choosealicense.com/licenses/mit/)
