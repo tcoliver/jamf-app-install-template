@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This template downloads and installs applications from DMG or PKG based
+# This template downloads and installs applications from DMG, PKG, or ZIP based
 # installers. To use the template, modify the variables in the USER MODIFIABLE
 # section as needed. Include any default configuration steps in
 # the configure function. Include logic for skipping the installation in the
@@ -61,14 +61,14 @@ function dont_run() {
 
 INSTALL_DIR=$(echo "${INSTALL_PATH}" | sed -En -e 's/(.+\/)[^\/]+/\1/p')
 INSTALL_APP=$(echo "${INSTALL_PATH}" | sed -En -e 's/.+\/([^\/]+)/\1/p')
-DOWNLOAD_EXT=$(echo "$DOWNLOAD_EXT" | tr '[:upper:]' '[:lower:]')
+DOWNLOAD_EXT=$(echo "${DOWNLOAD_EXT}" | tr '[:upper:]' '[:lower:]')
 if [[ ! "${DOWNLOAD_EXT}" =~ ^(pkg|dmg|zip)$ ]]; then
   echo "Invalid DOWNLOAD_EXT (${DOWNLOAD_EXT}). Must be \"dmg\", \"pkg\", or \"zip\""
   exit 5
 fi
-DOWNLOAD_PATH="/tmp/$(echo "$APPLICATION_NAME" | tr -s " \t" "_").${DOWNLOAD_EXT}"
-MOUNT_DIR="/private/tmp/$(echo "$APPLICATION_NAME" | tr -s " \t" "_")/"
-LOG_FILE="/Library/Logs/$(echo "$APPLICATION_NAME" | tr -s " \t" "_")_install.log"
+DOWNLOAD_PATH="/tmp/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_").${DOWNLOAD_EXT}"
+MOUNT_DIR="/private/tmp/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_")/"
+LOG_FILE="/Library/Logs/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_")_install.log"
 
 ########################################
 # Echo the global config variables to the log.
@@ -134,14 +134,14 @@ function setup_logging() {
 function download_install() {
   echo "Start: Install of ${APPLICATION_NAME}"
 
-  if [ -d "$DOWNLOAD_PATH" ]; then
-    /bin/rm -rf "$DOWNLOAD_PATH"
+  if [ -d "${DOWNLOAD_PATH}" ]; then
+    /bin/rm -rf "${DOWNLOAD_PATH}"
     echo "Removed previous install files and folders."
   fi
 
-  echo -n "Downloading $APPLICATION_NAME..."
-  /usr/bin/curl -Ls -o "$DOWNLOAD_PATH" "$URL" >/dev/null 2>&1
-  if [[ -f "$DOWNLOAD_PATH" ]]; then
+  echo -n "Downloading ${APPLICATION_NAME}..."
+  /usr/bin/curl -Ls -o "${DOWNLOAD_PATH}" "${URL}" >/dev/null 2>&1
+  if [[ -f "${DOWNLOAD_PATH}" ]]; then
     echo "complete"
   else
     echo "failed"
@@ -151,7 +151,7 @@ function download_install() {
   local process_killed="false"
   echo -n "Detecting if ${APPLICATION_NAME} is running..."
   IS_RUNNING=$(osascript -e "if application \"${INSTALL_PATH}\" is running then" -e "return true" -e "end if")
-  if [[ $IS_RUNNING = "true" ]]; then
+  if [[ "${IS_RUNNING}" = "true" ]]; then
     echo "detected"
     echo -n "Killing process..."
     osascript -e "quit app \"${INSTALL_PATH}\""
@@ -178,12 +178,12 @@ function download_install() {
   fi
 
   echo "Installing from \"${DOWNLOAD_PATH}\""
-  if [[ $DOWNLOAD_EXT == "dmg" ]]; then
+  if [[ "${DOWNLOAD_EXT}" == "dmg" ]]; then
     MOUNT_DIR=$(/usr/bin/mktemp -d "${MOUNT_DIR}.XXXXXX")
-    /usr/bin/hdiutil attach "$DOWNLOAD_PATH" -mountpoint "$MOUNT_DIR" -nobrowse -noverify -noautoopen >/dev/null
+    /usr/bin/hdiutil attach "${DOWNLOAD_PATH}" -mountpoint "${MOUNT_DIR}" -nobrowse -noverify -noautoopen >/dev/null
     echo "Mounted to \"${MOUNT_DIR}\""
 
-    echo "Installing $APPLICATION_NAME"
+    echo "Installing ${APPLICATION_NAME}"
     echo "Copying \"${APPLICATION_NAME}.app\" to Applications folder"
     if ! cp -R "${MOUNT_DIR}/${INSTALL_APP}.app" "${INSTALL_DIR}"; then
       echo "Failed to install"
@@ -216,9 +216,9 @@ function download_install() {
 
   configure
 
-  if [[ $RELAUNCH == "true" && $process_killed == "true" ]]; then
+  if [[ "${RELAUNCH}" == "true" && "${process_killed}" == "true" ]]; then
     echo "Relaunching application"
-    open "$INSTALL_PATH" --args "${RELAUNCH_ARGS[@]}"
+    open "${INSTALL_PATH}" --args "${RELAUNCH_ARGS[@]}"
   fi
 
   echo "End: Install of ${APPLICATION_NAME}"
@@ -230,22 +230,22 @@ function download_install() {
 #   return value of trapped signal
 ########################################
 function cleanup() {
-  local errorlevel=$1
+  local errorlevel="${1}"
   echo -n "Cleaning up from install..."
 
-  if [ -d "$MOUNT_DIR" ]; then
-    /usr/bin/hdiutil detach "$MOUNT_DIR" >/dev/null
-    /bin/rm -R "$MOUNT_DIR"
+  if [ -d "${MOUNT_DIR}" ]; then
+    /usr/bin/hdiutil detach "${MOUNT_DIR}" >/dev/null
+    /bin/rm -R "${MOUNT_DIR}"
   fi
 
-  if [[ -f "$DOWNLOAD_PATH" ]]; then
-    /bin/rm "$DOWNLOAD_PATH"
+  if [[ -f "${DOWNLOAD_PATH}" ]]; then
+    /bin/rm "${DOWNLOAD_PATH}"
   fi
 
   echo "complete"
-  if [[ $errorlevel -gt 0 ]]; then
+  if [[ "${errorlevel}" -gt 0 ]]; then
     echo "Script exited with errors (errorlevel ${errorlevel})"
-    case $errorlevel in
+    case "${errorlevel}" in
       1) echo "An error occurred when downloading the installer." ;;
       2) echo "An error occurred when killing the running process." ;;
       3) echo "An error occurred when removing the previous installation" ;;
@@ -258,13 +258,13 @@ function cleanup() {
   echo "=====================================" >>"${LOG_FILE}"
 }
 
-trap 'cleanup $?' EXIT
+trap 'cleanup "${?}"' EXIT
 setup_logging
 date +"%FT%T%z" >>"${LOG_FILE}"
 echo_config
 if dont_run; then
   echo -n "The dont_run function returned 0, exiting "
-  if [[ $FAIL_ON_SKIP = "true" ]]; then
+  if [[ "${FAIL_ON_SKIP}" = "true" ]]; then
     echo "failure on skip"
     exit 5
   else
