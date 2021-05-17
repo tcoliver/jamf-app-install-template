@@ -3,12 +3,12 @@
 
 ## Table of Contents
 
-- [1. General Info](#1.-General-Info)
-- [2. Features](#2.-Features)  
-- [3. Documentation](#3.-Documentation)  
-- [4. Usage](#4.-Usage)
-- [5. Contributing](#5.-Contributing)
-- [6. License](#6.-License)
+- [1. General Info](#1-general-info)
+- [2. Features](#2-features)  
+- [3. Documentation](#3-documentation)  
+- [4. Usage](#4-usage)
+- [5. Contributing](#5-contributing)
+- [6. License](#6-license)
 
 ## 1. General Info
 
