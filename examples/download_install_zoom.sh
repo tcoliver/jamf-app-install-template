@@ -26,7 +26,8 @@
 #                 anything other than 0 (e.g., return 1) will allow the script to continue.
 #                 The script continues by default.
 #
-# Created by: Trenten Oliver, UNF 2021
+# Author: Trenten Oliver, UNF 2021
+# Source: https://github.com/tcoliver/jamf-app-install-template
 
 ##########################
 # START: USER MODIFIABLE #
