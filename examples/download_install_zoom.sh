@@ -43,7 +43,7 @@ FAIL_ON_SKIP="true"
 function configure() {
     echo "Setting default configuration"
     defaults write /Library/Preferences/us.zoom.config.plist ZAutoSSOLogin -string YES
-    defaults write /Library/Preferences/us.zoom.config.plist ZSSOHost -string zoom.us
+    defaults write /Library/Preferences/us.zoom.config.plist ZSSOHost -string XXX.zoom.us
     defaults write /Library/Preferences/us.zoom.config.plist nogoogle  -string 1
     defaults write /Library/Preferences/us.zoom.config.plist nofacebook -string 1
 }
