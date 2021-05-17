@@ -37,7 +37,6 @@ Modifiable" section. This section includes the following global variables and fu
 | `INSTALL_PATH`     | `string` | Full path of the .app package after installation       |
 | `URL`              | `string` | Download URL, can be indirect                          |
 | `DOWNLOAD_EXT`     | `string` | Extension of the downloaded installer (dmg or pkg)     |
-| `PROCESS_NAME`     | `string` | Name of the running process to check for and kill      |
 | `RELAUNCH`         | `bool`   | Relaunch app after install (true or false)             |
 | `RELAUNCH_ARGS`    | `array`  | Arguments to pass when relaunching the application     |
 | `FAIL_ON_SKIP`     | `bool`   | If "true" then return non-zero exit code on skip       |
@@ -60,7 +59,6 @@ APPLICATION_NAME="zoom.us"
 INSTALL_PATH="/Applications/zoom.us.app"
 URL="https://zoom.us/client/latest/ZoomInstallerIT.pkg"
 DOWNLOAD_EXT="PKG"
-PROCESS_NAME="zoom.us"
 RELAUNCH="true"
 RELAUNCH_ARGS=()
 
