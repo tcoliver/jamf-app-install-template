@@ -23,6 +23,7 @@ install scripts that are always up to date.
 - Built-in support to auto cancel an install in order to avoid disruptions
 - Configurable to exit as failure or success on a canceled run
 - Auto relaunch the application if it was closed during install
+- Ready to deploy example installers in the examples directory
 
 ## 3. Documentation
 
