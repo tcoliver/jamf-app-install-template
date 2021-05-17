@@ -1,5 +1,5 @@
 
-# Jamf Pro - Application Download Install Template
+# Jamf Pro - Application Install Template
 
 ## Table of Contents
 
