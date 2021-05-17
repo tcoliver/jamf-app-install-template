@@ -112,4 +112,4 @@ Contributions are always welcome! Feel free to create issues or pull requests wi
 
 ## 6. License
 
-This project is licensed under the [MIT](LICENSE)
+This project is licensed under the [MIT license](LICENSE).
