@@ -48,7 +48,10 @@ Modifiable" section. This section includes the following global variables and fu
 | `configure`        | Configuration steps to run after the install completes            |
 | `dont_run`         | Logic to determine if the script should cancel the install        |
 
-**Important Note:** Return 0 from the `dont_run` function to cancel the install. Returning anything other than 0 (e.g., return 1) will allow the script to continue. The script continues by default.
+**Important Notes:**
+
+- Return 0 from the `dont_run` function to cancel the install. Returning anything other than 0 (e.g., return 1) will allow the script to continue. The script continues by default.
+- `INSTALL_PATH` may be left as "" for pkg installs. Doing so disables automatic detections. This can be useful for non-standard applications which do not install to /Applications/
 
 ### 3.3 An example Zoom configuration
 

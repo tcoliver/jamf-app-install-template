@@ -59,13 +59,19 @@ function dont_run() {
 # END: USER MODIFIABLE   #
 ##########################
 
-INSTALL_DIR=$(echo "${INSTALL_PATH}" | sed -En -e 's/(.+\/)[^\/]+/\1/p')
-INSTALL_APP=$(echo "${INSTALL_PATH}" | sed -En -e 's/.+\/([^\/]+)/\1/p')
 DOWNLOAD_EXT=$(echo "${DOWNLOAD_EXT}" | tr '[:upper:]' '[:lower:]')
 if [[ ! "${DOWNLOAD_EXT}" =~ ^(pkg|dmg|zip)$ ]]; then
   echo "Invalid DOWNLOAD_EXT (${DOWNLOAD_EXT}). Must be \"dmg\", \"pkg\", or \"zip\""
   exit 5
 fi
+
+INSTALL_DIR=$(echo "${INSTALL_PATH}" | sed -En -e 's/(.+\/)[^\/]+/\1/p')
+INSTALL_APP=$(echo "${INSTALL_PATH}" | sed -En -e 's/.+\/([^\/]+)/\1/p')
+if [[ "${DOWNLOAD_EXT}" != "pkg" && (-z "${INSTALL_PATH}" || -z "${INSTALL_DIR}" || -z "${INSTALL_APP}") ]]; then
+  echo "INSTALL_PATH can only be empty for pkg based installs"
+  exit 6
+fi
+
 DOWNLOAD_PATH="/tmp/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_").${DOWNLOAD_EXT}"
 MOUNT_DIR="/private/tmp/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_")/"
 LOG_FILE="/Library/Logs/$(echo "${APPLICATION_NAME}" | tr -s " \t" "_")_install.log"
@@ -149,32 +155,36 @@ function download_install() {
   fi
 
   local process_killed="false"
-  echo -n "Detecting if ${APPLICATION_NAME} is running..."
-  IS_RUNNING=$(osascript -e "if application \"${INSTALL_PATH}\" is running then" -e "return true" -e "end if")
-  if [[ "${IS_RUNNING}" = "true" ]]; then
-    echo "detected"
-    echo -n "Killing process..."
-    osascript -e "quit app \"${INSTALL_PATH}\""
-    process_killed="true"
-    echo "done"
-    echo "Will relaunch application after install"
-  else
-    echo "not detected"
-  fi
-
-  echo -n "Detecting if ${APPLICATION_NAME} is installed..."
-  if [[ -d "${INSTALL_PATH}" ]]; then
-    echo "detected"
-    echo -n "Removing ${APPLICATION_NAME}..."
-    if [[ -d "${INSTALL_PATH}" ]]; then
-      if ! rm -rf "${INSTALL_PATH}"; then
-        echo "failed"
-        exit 3
-      fi
+  if [[ -n "${INSTALL_PATH}" ]]; then
+    echo -n "Detecting if ${APPLICATION_NAME} is running..."
+    IS_RUNNING=$(osascript -e "if application \"${INSTALL_PATH}\" is running then" -e "return true" -e "end if")
+    if [[ "${IS_RUNNING}" = "true" ]]; then
+      echo "detected"
+      echo -n "Killing process..."
+      osascript -e "quit app \"${INSTALL_PATH}\""
+      process_killed="true"
       echo "done"
+      echo "Will relaunch application after install"
+    else
+      echo "not detected"
+    fi
+
+    echo -n "Detecting if ${APPLICATION_NAME} is installed..."
+    if [[ -d "${INSTALL_PATH}" ]]; then
+      echo "detected"
+      echo -n "Removing ${APPLICATION_NAME}..."
+      if [[ -d "${INSTALL_PATH}" ]]; then
+        if ! rm -rf "${INSTALL_PATH}"; then
+          echo "failed"
+          exit 3
+        fi
+        echo "done"
+      fi
+    else
+      echo "not detected"
     fi
   else
-    echo "not detected"
+    echo "INSTALL_PATH is not defined, skipping detections"
   fi
 
   echo "Installing from \"${DOWNLOAD_PATH}\""
@@ -190,7 +200,7 @@ function download_install() {
       exit 4
     fi
     /bin/sleep 1
-   
+
     echo "Setting permissions"
     chown -R root:wheel "${INSTALL_PATH}"
     chmod -R 755 "${INSTALL_PATH}"
@@ -202,12 +212,12 @@ function download_install() {
     fi
   elif [[ "${DOWNLOAD_EXT}" == "zip" ]]; then
     echo -n "Unzipping \"${DOWNLOAD_PATH}\"..."
-    if ! unzip "${DOWNLOAD_PATH}" -d "${INSTALL_DIR}" >/dev/null; then 
-        echo "Failed to unzip"
-        exit 4
+    if ! unzip "${DOWNLOAD_PATH}" -d "${INSTALL_DIR}" >/dev/null; then
+      echo "Failed to unzip"
+      exit 4
     fi
     echo "done"
-    
+
     echo "Setting permissions"
     chown -R root:wheel "${INSTALL_PATH}"
     chmod -R 755 "${INSTALL_PATH}"
@@ -250,7 +260,9 @@ function cleanup() {
       2) echo "An error occurred when killing the running process." ;;
       3) echo "An error occurred when removing the previous installation" ;;
       4) echo "The application failed to install." ;;
-      5) echo "The dont_run function returned 0. Installation cancelled." ;;
+      5) echo "Invalid installer extension. Must be pkg, dmg, or zip" ;;
+      6) echo "INSTALL_PATH can only be \"\" for pkg based installers" ;;
+      7) echo "The dont_run function returned 0. Installation cancelled." ;;
       *) echo "A unknown error occurred" ;;
     esac
   fi
@@ -266,7 +278,7 @@ if dont_run; then
   echo -n "The dont_run function returned 0, exiting "
   if [[ "${FAIL_ON_SKIP}" = "true" ]]; then
     echo "failure on skip"
-    exit 5
+    exit 7
   else
     echo "success on skip"
     exit 0
