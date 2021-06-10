@@ -17,11 +17,11 @@ install scripts that are always up to date.
 
 ## 2. Features
 
-- Download and install of PKG and DMG type application distributions
-- Configurable for most applications with out modifying the script by setting variables
-- Built-in support for including post installation configuration steps
-- Built-in support to auto cancel an install in order to avoid disruptions
-- Configurable to exit as failure or success on a canceled run
+- Download and install of PKG, DMG, and ZIP type application distributions
+- Configurable for most applications by setting a few variables
+- Support for including post installation configuration steps
+- Auto cancel an install in order to avoid disruptions
+- Choose to exit as failure or success on a canceled run
 - Auto relaunch the application if it was closed during install
 - Ready to deploy example installers in the examples directory
 
