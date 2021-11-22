@@ -30,7 +30,7 @@
 
 ##########################
 # START: USER MODIFIABLE #
-APPLICATION_NAME="Office 2019 for Mac"
+APPLICATION_NAME="Office for Mac"
 INSTALL_PATH=""
 URL="https://go.microsoft.com/fwlink/?linkid=525133"
 DOWNLOAD_EXT="pkg"

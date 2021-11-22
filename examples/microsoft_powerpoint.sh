@@ -30,7 +30,7 @@
 
 ##########################
 # START: USER MODIFIABLE #
-APPLICATION_NAME="PowerPoint 2019 for Mac"
+APPLICATION_NAME="PowerPoint for Mac"
 INSTALL_PATH=""
 URL="https://go.microsoft.com/fwlink/?linkid=525136"
 DOWNLOAD_EXT="pkg"

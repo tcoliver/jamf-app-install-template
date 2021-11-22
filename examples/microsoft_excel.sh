@@ -30,7 +30,7 @@
 
 ##########################
 # START: USER MODIFIABLE #
-APPLICATION_NAME="Excel 2019 for Mac"
+APPLICATION_NAME="Excel for Mac"
 INSTALL_PATH=""
 URL="https://go.microsoft.com/fwlink/?linkid=525135"
 DOWNLOAD_EXT="pkg"

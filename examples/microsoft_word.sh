@@ -30,7 +30,7 @@
 
 ##########################
 # START: USER MODIFIABLE #
-APPLICATION_NAME="Word 2019 for Mac"
+APPLICATION_NAME="Word for Mac"
 INSTALL_PATH=""
 URL="https://go.microsoft.com/fwlink/?linkid=525134"
 DOWNLOAD_EXT="pkg"

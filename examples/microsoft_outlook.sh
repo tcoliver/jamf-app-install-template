@@ -30,7 +30,7 @@
 
 ##########################
 # START: USER MODIFIABLE #
-APPLICATION_NAME="Outlook 2019 for Mac"
+APPLICATION_NAME="Outlook for Mac"
 INSTALL_PATH=""
 URL="https://go.microsoft.com/fwlink/?linkid=525137"
 DOWNLOAD_EXT="pkg"
