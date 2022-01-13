@@ -67,13 +67,13 @@ set -u
 
 ########################################
 # START: USER MODIFIABLE
-APPLICATION_NAME=
-DOWNLOAD_URL=
-CONTAINER_TYPE=
-INSTALL_ACTION=
-INSTALLER_NAME=
-INSTALLER_TYPE=
-INSTALLED_PATH=
+APPLICATION_NAME="Zotero"
+DOWNLOAD_URL="https://www.zotero.org/download/client/dl?channel=release&platform=mac"
+CONTAINER_TYPE="dmg"
+INSTALL_ACTION="move"
+INSTALLER_NAME="Zotero.app"
+INSTALLER_TYPE="app"
+INSTALLED_PATH="/Applications/Zotero.app"
 DETECTION_NAME=
 SCRATCH_PREFIX=
 RELAUNCH=

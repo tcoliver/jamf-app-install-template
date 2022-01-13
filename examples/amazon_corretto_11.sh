@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Template Version 1.0.0
+# Template Version 1.1.1
 #
 # This template downloads and installs applications from DMG, PKG, or ZIP based
 # installers. To use the template, modify the variables in the USER MODIFIABLE
@@ -18,7 +18,7 @@
 # | `DOWNLOAD_URL`     | true     | `string` |                 | The URL to download from, can be indirect             |
 # |--------------------|----------|----------|-----------------|-------------------------------------------------------|
 # | `CONTAINER_TYPE`   | true     | `string` |                 | Extension to use for the downloaded container         |
-# |                    |          |          |                 | (dmg, pkg, zip, app)                                  |
+# |                    |          |          |                 | (dmg, pkg, zip, tar, tar.gz, tbz, app)                |
 # |--------------------|----------|----------|-----------------|-------------------------------------------------------|
 # | `INSTALL_ACTION`   | true     | `string` |                 | Action to install from container (run, move)          |
 # |--------------------|----------|----------|-----------------|-------------------------------------------------------|
@@ -53,12 +53,12 @@
 #
 # Exit Codes:
 #   0   Successful installation
-#   1   Generic error
-#   2   Error in configuration
-#   3   Error downloading installer
-#   4   Error preparing install environment
-#   5   Error while installing
-#   6   preinstall function caused skipped execution while FAIL_ON_SKIP="true"
+#   1   Error in configuration
+#   2   Error downloading installer
+#   3   Error preparing install environment
+#   4   Error while installing
+#   5   preinstall function caused skipped execution while FAIL_ON_SKIP="true"
+#   6   postinstall steps failed
 #
 # Author: Trenten Oliver, UNF 2021
 # Source: https://github.com/tcoliver/jamf-app-install-template
@@ -160,7 +160,7 @@ vars_check_required() {
     "INSTALL_ACTION"
   )
 
-  if [[ "${CONTAINER_TYPE}" =~ ^(dmg|zip)$ ]]; then
+  if [[ "${CONTAINER_TYPE}" =~ ^(dmg|zip|tar|tar\.gz|tbz)$ ]]; then
     REQUIRED_VARS+=("INSTALLER_TYPE" "INSTALLER_NAME" "INSTALLED_PATH")
   elif [[ -n "${INSTALLER_TYPE}" ]] || [[ -n "${INSTALLER_NAME}" ]]; then
     REQUIRED_VARS+=("INSTALLER_TYPE" "INSTALLER_NAME")
@@ -202,8 +202,8 @@ vars_check_validity() {
   RELAUNCH=$(lowercase "${RELAUNCH}")
   FAIL_ON_SKIP=$(lowercase "${FAIL_ON_SKIP}")
 
-  if [[ ! "${CONTAINER_TYPE}" =~ ^(pkg|dmg|zip|app)$ ]]; then
-    echo >&2 "Invalid Variable: CONTAINER_TYPE (Must be \"dmg\", \"pkg\", \"zip\", or \"app\")"
+  if [[ ! "${CONTAINER_TYPE}" =~ ^(pkg|dmg|zip|tar|tar\.gz|tbz|app)$ ]]; then
+    echo >&2 "Invalid Variable: CONTAINER_TYPE (Must be \"dmg\", \"pkg\", \"zip\", \"tar\", \"tar.gz\", \"tbz\", or \"app\")"
     SUCCESS="FALSE"
   fi
 
@@ -270,7 +270,7 @@ vars_compute_missing() {
   fi
   DOWNLOAD_PATH="${SCRATCH_DIR}/${CONTAINER_NAME}"
   INSTALLER_PATH="${DOWNLOAD_PATH}"
-  if [[ "${CONTAINER_TYPE}" =~ ^(dmg|zip)$ ]]; then
+  if [[ "${CONTAINER_TYPE}" =~ ^(dmg|zip|tar|tar\.gz|tbz)$ ]]; then
     EXPAND_DIR="${SCRATCH_DIR}/expand_$(slugify "${APPLICATION_NAME}")"
     INSTALLER_PATH="${EXPAND_DIR}/${INSTALLER_NAME}"
   else
@@ -466,8 +466,55 @@ remove_installed_app() {
   return 0
 }
 
+
 ########################################
-# Copies application from download and sets permissions
+# Moves application from download and sets permissions
+# Parameters:
+#   archive type (dmg, zip, tar, tar.gz, tbz)
+#   Source path
+#   Destination path
+# Returns:
+#   0 if the application was moved successfuly
+#   1 if the application was not moved successfuly
+########################################
+expand_archive() {
+  local ARCHIVE_TYPE=$1
+  local SRC_DIR=$2
+  local TARGET_DIR=$3
+
+  if [[ "${ARCHIVE_TYPE}" = "dmg" ]]; then
+    echo "Mounting dmg to ${TARGET_DIR}"
+    if ! mkdir -p "${TARGET_DIR}"; then
+      echo "Failed to make expansion directory"
+      return 1
+    fi
+    if ! /usr/bin/hdiutil attach "${SRC_DIR}" -mountpoint "${TARGET_DIR}" -nobrowse -noverify -noautoopen >/dev/null; then
+      echo "Failed to mount dmg"
+      return 1
+    fi
+  elif [[ "${ARCHIVE_TYPE}" = "zip" ]]; then
+    echo -n "Unzipping zip to \"${TARGET_DIR}\"..."
+    if ! unzip "${SRC_DIR}" -d "${TARGET_DIR}" >/dev/null; then
+      echo "Failed to unzip"
+      return 1
+    fi
+    echo "done"
+  elif [[ "${ARCHIVE_TYPE}" =~ ^(tar|tar\.gz|tbz)$ ]]; then
+    echo -n "Expanding to \"${TARGET_DIR}\"..."
+    mkdir -p "${TARGET_DIR}"
+    if ! tar -x -f "${SRC_DIR}" -C "${TARGET_DIR}" >/dev/null; then
+      echo "Failed to unzip"
+      return 1
+    fi
+    echo "done"
+  else
+    echo "Unknown archive type"
+    return 1
+  fi
+}
+
+########################################
+# Moves application from download and sets permissions
 # Parameters:
 #   Source path
 #   Destination path
@@ -482,6 +529,37 @@ install_move() {
   echo "Moving \"${SRC_PATH}\" to \"${DEST_PATH}\""
   if ! mv -f "${SRC_PATH}" "${DEST_PATH}"; then
     echo "Failed to move"
+    return 1
+  fi
+  /bin/sleep 1
+
+  echo "Setting permissions"
+  if ! chown -R root:wheel "${INSTALLED_PATH}"; then
+    return 1
+  fi
+
+  echo "Removing quarantine attribute"
+  xattr -r -d com.apple.quarantine "${INSTALLED_PATH}"
+
+  return 0
+}
+
+########################################
+# Copies application from download and sets permissions
+# Parameters:
+#   Source path
+#   Destination path
+# Returns:
+#   0 if the application was moved successfuly
+#   1 if the application was not moved successfuly
+########################################
+install_copy() {
+  local SRC_PATH=$1
+  local DEST_PATH=$2
+
+  echo "Copying \"${SRC_PATH}\" to \"${DEST_PATH}\""
+  if ! cp -R -f "${SRC_PATH}" "${DEST_PATH}"; then
+    echo "Failed to copy"
     return 1
   fi
   /bin/sleep 1
@@ -561,6 +639,7 @@ cleanup() {
       3) echo "An error occured while preparing the installation environment." ;;
       4) echo "An error occured while installing the application." ;;
       5) echo "The preinstall function caused the installation to be skipped execution while FAIL_ON_SKIP=\"true\"" ;;
+      6) echo "The postinstall steps failed" ;;
       *) echo "A unknown error occurred" ;;
     esac
   fi
@@ -626,36 +705,32 @@ if [[ "${INSTALLER_TYPE}" != "pkg" ]] && [[ -n "${INSTALLED_PATH}" ]]; then
 fi
 # TODO add detection for same version
 
-# Expand Archive
-if [[ "${CONTAINER_TYPE}" = "dmg" ]]; then
-  echo "Mounting dmg to ${EXPAND_DIR}"
-  mkdir -p "${EXPAND_DIR}"
-  if ! /usr/bin/hdiutil attach "${DOWNLOAD_PATH}" -mountpoint "${EXPAND_DIR}" -nobrowse -noverify -noautoopen >/dev/null; then
-    echo "Failed to mount dmg"
+if [[ "${CONTAINER_TYPE}" =~ ^(dmg|zip|tar|tar\.gz|tbz)$ ]]; then
+  if ! expand_archive "${CONTAINER_TYPE}" "${DOWNLOAD_PATH}" "${EXPAND_DIR}"; then
     exit 4
   fi
-elif [[ "${CONTAINER_TYPE}" = "zip" ]]; then
-  echo -n "Unzipping zip to \"${EXPAND_DIR}\"..."
-  if ! unzip "${DOWNLOAD_PATH}" -d "${EXPAND_DIR}" >/dev/null; then
-    echo "Failed to unzip"
-    exit 4
-  fi
-  echo "done"
 fi
+
 # Run installer
 echo "Installing from \"${INSTALLER_PATH}\""
 if [[ "${INSTALL_ACTION}" = "run" ]]; then
   if ! install_run "${INSTALLER_PATH}" "${INSTALLER_TYPE}"; then
     exit 4
   fi
-elif [[ "${INSTALL_ACTION}" = "move" ]]; then
+elif [[ "${INSTALL_ACTION}" = "move" ]] && [[ "${CONTAINER_TYPE}" = "dmg" ]]; then
+  if ! install_copy "${INSTALLER_PATH}" "${INSTALLED_PATH}"; then
+    exit 4
+  fi
+elif [[ "${INSTALL_ACTION}" = "move" ]] && [[ "${CONTAINER_TYPE}" =~ ^(ziptar|tar\.gz|tbz)$ ]]; then
   if ! install_move "${INSTALLER_PATH}" "${INSTALLED_PATH}"; then
     exit 4
   fi
 fi
 
 # Post install configuration
-configure
+if ! postinstall; then
+  exit 6
+fi
 
 # Relauch app if required
 if [[ "${RELAUNCH}" = "true" ]] && [[ "${PROCESS_KILLED}" = "true" ]]; then
