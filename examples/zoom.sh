@@ -92,12 +92,12 @@ preinstall() {
 
   if [[ KB_IN -gt 500 || KB_OUT -gt 500 ]]; then
     echo "Zoom Meeting detected, unable to proceed"
-    return 0 # do not run download and install
+    return 1 # do not run download and install
   else
     echo "No Zoom Meeting detected, proceeding with installation"
-    return 1 # run download and install
+    return 0 # run installation
   fi
-  return 0 # run installation
+
 }
 
 # Add any configuration steps here
