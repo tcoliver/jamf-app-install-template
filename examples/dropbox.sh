@@ -67,46 +67,48 @@ set -u
 
 ########################################
 # START: USER MODIFIABLE
-APPLICATION_NAME="zoom.us"
-DOWNLOAD_URL="https://zoom.us/client/latest/ZoomInstallerIT.pkg"
-CONTAINER_TYPE="pkg"
+APPLICATION_NAME="Dropbox"
+DOWNLOAD_URL="https://www.dropbox.com/download?plat=mac"
+CONTAINER_TYPE="dmg"
 INSTALL_ACTION="run"
-INSTALLER_NAME=
-INSTALLER_TYPE=
-INSTALLED_PATH="/Applications/zoom.us.app"
+INSTALLER_NAME="Dropbox.app"
+INSTALLER_TYPE="app"
+INSTALLED_PATH="/Applications/Dropbox.app"
 DETECTION_NAME=
-SCRATCH_PREFIX=
+SCRATCH_PREFIX="/tmp"
 RELAUNCH=
 RELAUNCH_ARGS=()
 FAIL_ON_SKIP=
 
 # Return non-zero if the script should skip and try again later
 preinstall() {
-  KB_IN=
-  KB_OUT=
-  while IFS=',' read -r -a row; do
-    KB_IN=$((row[2] / 1024))
-    KB_OUT=$((row[3] / 1024))
-    echo "zoom.us network usage | KB In: ${KB_IN} / KB Out: ${KB_OUT}"
-  done < <(nettop -p zoom.us -P -n -J bytes_in,bytes_out -L 1 | tail -n +2)
-
-  if [[ KB_IN -gt 500 || KB_OUT -gt 500 ]]; then
-    echo "Zoom Meeting detected, unable to proceed"
-    return 0 # do not run download and install
-  else
-    echo "No Zoom Meeting detected, proceeding with installation"
-    return 1 # run download and install
-  fi
+  # Add logic to determine if the install should be canceled.
+  # ...
+  # if [[ example_condition ]]; then
+  #   # Script should cancel installation
+  #   return 1 # dont run installation
+  # fi
   return 0 # run installation
 }
 
 # Add any configuration steps here
 postinstall() {
-  echo "Setting default configuration"
-  defaults write /Library/Preferences/us.zoom.config.plist ZAutoSSOLogin -string YES
-  defaults write /Library/Preferences/us.zoom.config.plist ZSSOHost -string XXX.zoom.us
-  defaults write /Library/Preferences/us.zoom.config.plist nogoogle -string 1
-  defaults write /Library/Preferences/us.zoom.config.plist nofacebook -string 1
+  local counter
+  counter=0
+  while [[ counter -lt 30 ]]; do
+    counter=$((counter++))
+    if pgrep -x "Dropbox Web Helper" >/dev/null; then
+      echo "Found Dropbox Web Helper process"
+      break
+    else
+      sleep 1
+    fi
+  done
+  if pkill -9 -x -o Dropbox; then
+    echo "Killed Dropbox process"
+  else
+    echo "Failed to kill Dropbox process"
+  fi
   return 0
 }
 

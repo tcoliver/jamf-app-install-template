@@ -67,46 +67,34 @@ set -u
 
 ########################################
 # START: USER MODIFIABLE
-APPLICATION_NAME="zoom.us"
-DOWNLOAD_URL="https://zoom.us/client/latest/ZoomInstallerIT.pkg"
+APPLICATION_NAME="Microsoft Defender ATP"
+DOWNLOAD_URL="https://go.microsoft.com/fwlink/?linkid=2097502"
 CONTAINER_TYPE="pkg"
 INSTALL_ACTION="run"
 INSTALLER_NAME=
 INSTALLER_TYPE=
-INSTALLED_PATH="/Applications/zoom.us.app"
-DETECTION_NAME=
-SCRATCH_PREFIX=
-RELAUNCH=
+INSTALLED_PATH="/Applications/Microsoft Defender ATP.app"
+DETECTION_NAME="Microsoft Defender"
+RELAUNCH="true"
 RELAUNCH_ARGS=()
-FAIL_ON_SKIP=
+FAIL_ON_SKIP="true"
 
 # Return non-zero if the script should skip and try again later
 preinstall() {
-  KB_IN=
-  KB_OUT=
-  while IFS=',' read -r -a row; do
-    KB_IN=$((row[2] / 1024))
-    KB_OUT=$((row[3] / 1024))
-    echo "zoom.us network usage | KB In: ${KB_IN} / KB Out: ${KB_OUT}"
-  done < <(nettop -p zoom.us -P -n -J bytes_in,bytes_out -L 1 | tail -n +2)
-
-  if [[ KB_IN -gt 500 || KB_OUT -gt 500 ]]; then
-    echo "Zoom Meeting detected, unable to proceed"
-    return 0 # do not run download and install
-  else
-    echo "No Zoom Meeting detected, proceeding with installation"
-    return 1 # run download and install
-  fi
+  # Add logic to determine if the install should be canceled.
+  # ...
+  # if [[ example_condition ]]; then
+  #   # Script should cancel installation
+  #   return 1 # dont run installation
+  # fi
   return 0 # run installation
 }
 
 # Add any configuration steps here
 postinstall() {
-  echo "Setting default configuration"
-  defaults write /Library/Preferences/us.zoom.config.plist ZAutoSSOLogin -string YES
-  defaults write /Library/Preferences/us.zoom.config.plist ZSSOHost -string XXX.zoom.us
-  defaults write /Library/Preferences/us.zoom.config.plist nogoogle -string 1
-  defaults write /Library/Preferences/us.zoom.config.plist nofacebook -string 1
+  # Include any default configuration steps here
+  # ...
+  # defaults write com.example.plist key value
   return 0
 }
 
