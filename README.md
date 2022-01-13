@@ -17,7 +17,7 @@ install scripts that are always up to date.
 
 ## 2. Features
 
-- Download and install of PKG, APP, DMG, and ZIP type application distributions
+- Download and install of PKG, APP, DMG, TAR, and ZIP type application distributions
 - Configurable for most applications by setting a few variables
 - Support for including pre and post installation configuration steps
 - Auto cancel an install in order to avoid disruptions
@@ -32,20 +32,20 @@ Modifiable" section. This section includes the following global variables and fu
 
 ### 3.1 Variables
 
-| Variable           | Required | Type     | Default         | Description                                                                    |
-| :----------------- | :------- | :------- | :-------------- | :----------------------------------------------------------------------------- |
-| `APPLICATION_NAME` | true     | `string` |                 | Common name of the application, used only for logging                          |
-| `DOWNLOAD_URL`     | true     | `string` |                 | The URL to download from, can be indirect                                      |
-| `CONTAINER_TYPE`   | true     | `string` |                 | Extension to use for the downloaded container (dmg, pkg, zip, app)             |
-| `INSTALL_ACTION`   | true     | `string` |                 | Action to install from container (run, move)                                   |
-| `INSTALLER_NAME`   | false    | `string` |                 | Name of installer with extention included. Required for dmg or zip containers. |
-| `INSTALLER_TYPE`   | false    | `string` |                 | Type of installer (pkg, app, or dir). Required for dmg or zip container types  |
-| `INSTALLED_PATH`   | false    | `string` | NULL            | Full path of the .app package after installation                               |
-| `DETECTION_NAME`   | false    | `string` | $INSTALLED_PATH | Running process name to detect                                                 |
-| `SCRATCH_PREFIX`   | false    | `bool`   | $TEMPDIR        | Directory to store temporary files                                             |
-| `RELAUNCH`         | false    | `bool`   | true            | Relaunch app after install (true or false)                                     |
-| `RELAUNCH_ARGS`    | false    | `array`  | ()              | Arguments to pass when relaunching the application                             |
-| `FAIL_ON_SKIP`     | false    | `bool`   | true            | If " true" then return non-zero exit code on skip                              |
+| Variable           | Required | Type     | Default         | Description                                                                         |
+| :----------------- | :------- | :------- | :-------------- | :---------------------------------------------------------------------------------- |
+| `APPLICATION_NAME` | true     | `string` |                 | Common name of the application, used only for logging                               |
+| `DOWNLOAD_URL`     | true     | `string` |                 | The URL to download from, can be indirect                                           |
+| `CONTAINER_TYPE`   | true     | `string` |                 | Extension to use for the downloaded container (dmg, pkg, zip, tar, tar.gz, tbz, app)|
+| `INSTALL_ACTION`   | true     | `string` |                 | Action to install from container (run, move)                                        |
+| `INSTALLER_NAME`   | false    | `string` |                 | Name of installer with extention included. Required for dmg or zip containers.      |
+| `INSTALLER_TYPE`   | false    | `string` |                 | Type of installer (pkg, app, or dir). Required for dmg or zip container types       |
+| `INSTALLED_PATH`   | false    | `string` | NULL            | Full path of the .app package after installation                                    |
+| `DETECTION_NAME`   | false    | `string` | $INSTALLED_PATH | Running process name to detect                                                      |
+| `SCRATCH_PREFIX`   | false    | `bool`   | $TEMPDIR        | Directory to store temporary files                                                  |
+| `RELAUNCH`         | false    | `bool`   | true            | Relaunch app after install (true or false)                                          |
+| `RELAUNCH_ARGS`    | false    | `array`  | ()              | Arguments to pass when relaunching the application                                  |
+| `FAIL_ON_SKIP`     | false    | `bool`   | true            | If " true" then return non-zero exit code on skip                                   |
 
 ### 3.2 Functions
 
