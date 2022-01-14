@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Template Version 1.1.1
+# Template Version 1.1.2
 #
 # This template downloads and installs applications from DMG, PKG, or ZIP based
 # installers. To use the template, modify the variables in the USER MODIFIABLE
@@ -124,16 +124,16 @@ function setup_logging() {
 # Make string lowercase with underscores
 ########################################
 slugify() {
-  local app_name=$1
-  echo "${app_name}" | tr '[:upper:]' '[:lower:]' | tr -s " \t" "_"
+  local IN_STRING=$1
+  echo "${IN_STRING}" | tr '[:upper:]' '[:lower:]' | tr -s " \t" "_"
 }
 
 ########################################
 # Make string lowercase
 ########################################
 lowercase() {
-  local app_name=$1
-  echo "${app_name}" | tr '[:upper:]' '[:lower:]'
+  local IN_STRING=$1
+  echo "${IN_STRING}" | tr '[:upper:]' '[:lower:]'
 }
 
 ########################################
@@ -239,6 +239,7 @@ vars_compute_missing() {
   [[ -z "${RELAUNCH_ARGS[*]-}" ]] && RELAUNCH_ARGS=()
   [[ -z "${FAIL_ON_SKIP}" ]] && FAIL_ON_SKIP="true"
   PROCESS_KILLED="false"
+  DETACH_REQ="false"
 
   # Compute dynamic variables
   LOG_FILE="/Library/Logs/$(slugify "${APPLICATION_NAME}")_install.log"
@@ -291,13 +292,15 @@ echo_function() {
   local func_expected=$2
   local func_body
 
-  func_body=$(declare -f "${func_name}")
+  IFS= func_body=$(declare -f "${func_name}")
 
   if [[ "${func_body}" != "${func_expected}" ]]; then
-    echo "\"${func_name}\" function modified"
-    printf '%s\n' "${func_body}"
+    echo "  - ${func_name} function modified"
+    while IFS= read -r line; do
+      printf "    %s\n" "${line}"
+    done <<< "${func_body}"
   else
-    echo "\"${func_name}\" function not modified"
+    echo "  - ${func_name} function not modified"
   fi
 }
 
@@ -328,14 +331,12 @@ echo_config() {
     "LOG_FILE"
   )
 
-  echo "Configurable Variables"
-  echo "============================================================"
+  echo "Configurable Variables:"
   for VAR_NAME in "${VAR_NAMES[@]}"; do
-    [[ -n "${!VAR_NAME-}" ]] && printf "%-20s %s\n" "${VAR_NAME}" "${!VAR_NAME-}"
+    [[ -n "${!VAR_NAME-}" ]] && printf "  - %-20s %s\n" "${VAR_NAME}" "${!VAR_NAME-}"
   done
 
-  echo "Configurable Functions"
-  echo "============================================================"
+  echo "Configurable Functions:"
   echo_function "preinstall" $'preinstall () \n{ \n    return 0\n}'
   echo_function "postinstall" $'postinstall () \n{ \n    return 0\n}'
 }
@@ -489,7 +490,9 @@ expand_archive() {
       echo "Failed to make expansion directory"
       return 1
     fi
-    if ! /usr/bin/hdiutil attach "${SRC_DIR}" -mountpoint "${TARGET_DIR}" -nobrowse -noverify -noautoopen >/dev/null; then
+    if /usr/bin/hdiutil attach "${SRC_DIR}" -mountpoint "${TARGET_DIR}" -nobrowse -noverify -noautoopen >/dev/null; then
+      DETACH_REQ="true"
+    else
       echo "Failed to mount dmg"
       return 1
     fi
@@ -615,11 +618,13 @@ install_run() {
 ################################################################################
 cleanup() {
   local errorlevel="${1}"
-  echo -n "Cleaning up from install..."
+  echo -n "Cleaning up from install..." >>"${LOG_FILE}"
 
-  if [ -d "${EXPAND_DIR}" ]; then
-    /usr/bin/hdiutil detach -quiet "${EXPAND_DIR}" >/dev/null
-    sleep 5
+  if [[ -d "${EXPAND_DIR}" ]]; then
+    if [[ "${DETACH_REQ}" = "true" ]]; then
+      /usr/bin/hdiutil detach -quiet "${EXPAND_DIR}" >/dev/null
+      sleep 5
+    fi
     /bin/rm -fR "${EXPAND_DIR}"
   fi
 
@@ -631,7 +636,8 @@ cleanup() {
     /bin/rm -fR "${SCRATCH_DIR}"
   fi
 
-  echo "complete"
+  echo "complete" >>"${LOG_FILE}"
+
   if [[ "${errorlevel}" -gt 0 ]]; then
     echo "Script exited with errors (errorlevel ${errorlevel})"
     case "${errorlevel}" in
@@ -647,8 +653,11 @@ cleanup() {
   {
     echo -n "Run Completed: "
     date +"%FT%T%z"
+    echo "Exit Code: ${errorlevel}"
     echo "====================================="
   } >>"${LOG_FILE}"
+
+  exit "${errorlevel}"
 }
 
 ########################################
@@ -661,6 +670,7 @@ if ! check_config; then
 fi
 
 setup_logging
+echo -n "Run Started: " >>"${LOG_FILE}"
 date +"%FT%T%z" >>"${LOG_FILE}"
 echo_config
 
