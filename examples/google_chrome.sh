@@ -75,28 +75,30 @@ INSTALLER_NAME=
 INSTALLER_TYPE=
 INSTALLED_PATH="/Applications/Google Chrome.app"
 DETECTION_NAME=
+SCRATCH_PREFIX=
 RELAUNCH="true"
 RELAUNCH_ARGS=("--restore-last-session")
 FAIL_ON_SKIP="true"
 
-# Add any configuration steps here
-configure() {
-  echo "Setting default configuration"
-  # Include any default configuration steps here
-  # ...
-  # defaults write com.example.plist key value
-}
-
-# Return 0 if the script should skip and try again later
-dont_run() {
+# Return non-zero if the script should skip and try again later
+preinstall() {
   # Add logic to determine if the install should be canceled.
   # ...
   # if [[ example_condition ]]; then
   #   # Script should cancel installation
-  #   return 0 # dont run installation
+  #   return 1 # dont run installation
   # fi
-  return 1 # run installation
+  return 0 # run installation
 }
+
+# Add any configuration steps here
+postinstall() {
+  # Include any default configuration steps here
+  # ...
+  # defaults write com.example.plist key value
+  return 0
+}
+
 # END: USER MODIFIABLE
 ########################################
 
@@ -236,6 +238,7 @@ vars_compute_missing() {
   [[ -z "${RELAUNCH}" ]] && RELAUNCH="true"
   [[ -z "${RELAUNCH_ARGS[*]-}" ]] && RELAUNCH_ARGS=()
   [[ -z "${FAIL_ON_SKIP}" ]] && FAIL_ON_SKIP="true"
+  : "${SCRATCH_PREFIX:=}"
   PROCESS_KILLED="false"
   DETACH_REQ="false"
 

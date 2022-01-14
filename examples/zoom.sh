@@ -249,6 +249,7 @@ vars_compute_missing() {
   [[ -z "${RELAUNCH}" ]] && RELAUNCH="true"
   [[ -z "${RELAUNCH_ARGS[*]-}" ]] && RELAUNCH_ARGS=()
   [[ -z "${FAIL_ON_SKIP}" ]] && FAIL_ON_SKIP="true"
+  : "${SCRATCH_PREFIX:=}"
   PROCESS_KILLED="false"
   DETACH_REQ="false"
 

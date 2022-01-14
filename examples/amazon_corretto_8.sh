@@ -75,6 +75,7 @@ INSTALLER_NAME=
 INSTALLER_TYPE=
 INSTALLED_PATH=
 DETECTION_NAME=
+SCRATCH_PREFIX=
 RELAUNCH="false"
 RELAUNCH_ARGS=()
 FAIL_ON_SKIP=
@@ -237,6 +238,7 @@ vars_compute_missing() {
   [[ -z "${RELAUNCH}" ]] && RELAUNCH="true"
   [[ -z "${RELAUNCH_ARGS[*]-}" ]] && RELAUNCH_ARGS=()
   [[ -z "${FAIL_ON_SKIP}" ]] && FAIL_ON_SKIP="true"
+  : "${SCRATCH_PREFIX:=}"
   PROCESS_KILLED="false"
   DETACH_REQ="false"
 
