@@ -617,11 +617,13 @@ install_run() {
 ################################################################################
 cleanup() {
   local errorlevel="${1}"
-  echo -n "Cleaning up from install..." >>"${LOG_FILE}"
+  echo -n "Cleaning up from install" >>"${LOG_FILE}"
 
   if [[ -d "${EXPAND_DIR}" ]]; then
     if [[ "${DETACH_REQ}" = "true" ]]; then
-      /usr/bin/hdiutil detach -quiet "${EXPAND_DIR}" >/dev/null
+      if ! /usr/bin/hdiutil detach -quiet "${EXPAND_DIR}" >/dev/null; then
+        echo "Failed to unmount ${EXPAND_DIR}" >>"${LOG_FILE}"
+      fi
       sleep 5
     fi
     /bin/rm -fR "${EXPAND_DIR}"
@@ -634,8 +636,6 @@ cleanup() {
   if [[ -d "${SCRATCH_DIR}" ]]; then
     /bin/rm -fR "${SCRATCH_DIR}"
   fi
-
-  echo "complete" >>"${LOG_FILE}"
 
   if [[ "${errorlevel}" -gt 0 ]]; then
     echo "Script exited with errors (errorlevel ${errorlevel})"
