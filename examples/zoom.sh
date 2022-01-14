@@ -662,8 +662,7 @@ cleanup() {
     esac
   fi
   {
-    echo -n "Run Completed: "
-    date +"%FT%T%z"
+    echo -n "Run Completed: $(date +"%FT%T%z")"
     echo "Exit Code: ${errorlevel}"
     echo "====================================="
   } >>"${LOG_FILE}"
@@ -681,8 +680,7 @@ if ! check_config; then
 fi
 
 setup_logging
-echo -n "Run Started: " >>"${LOG_FILE}"
-date +"%FT%T%z" >>"${LOG_FILE}"
+echo -n "Run Started: $(date +"%FT%T%z")" >>"${LOG_FILE}"
 echo_config
 
 if ! preinstall; then
