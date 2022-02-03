@@ -67,13 +67,13 @@ set -u
 
 ########################################
 # START: USER MODIFIABLE
-APPLICATION_NAME="Microsoft Defender ATP"
+APPLICATION_NAME="Microsoft Defender for Endpoint"
 DOWNLOAD_URL="https://go.microsoft.com/fwlink/?linkid=2097502"
 CONTAINER_TYPE="pkg"
 INSTALL_ACTION="run"
 INSTALLER_NAME=
 INSTALLER_TYPE=
-INSTALLED_PATH="/Applications/Microsoft Defender ATP.app"
+INSTALLED_PATH="/Applications/Microsoft Defender.app"
 DETECTION_NAME="Microsoft Defender"
 SCRATCH_PREFIX=
 RELAUNCH="true"
