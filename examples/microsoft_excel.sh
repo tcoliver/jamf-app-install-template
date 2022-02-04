@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Template Version 1.1.2
+# Template Version 1.1.3
 #
 # This template downloads and installs applications from DMG, PKG, or ZIP based
 # installers. To use the template, modify the variables in the USER MODIFIABLE
@@ -670,11 +670,11 @@ if ! check_config; then
 fi
 
 setup_logging
-echo -n "Run Started: $(date +"%FT%T%z")" >>"${LOG_FILE}"
+echo "Run Started: $(date +"%FT%T%z")" >>"${LOG_FILE}"
 echo_config
 
 if ! preinstall; then
-  echo -n "The preinstall function canceled the install, exiting "
+  echo "The preinstall function canceled the install, exiting "
   if [[ "${FAIL_ON_SKIP}" = "true" ]]; then
     echo "failure on skip"
     exit 5
